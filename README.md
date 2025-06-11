@@ -23,6 +23,8 @@ The Homey MCP Server enables Claude AI to interact directly with your Homey Pro 
 - Claude Desktop application
 - Valid Homey Personal Access Token
 
+**Platform Support**: macOS, Windows, Linux
+
 ### Installation
 
 1. **Clone and Setup**
@@ -39,6 +41,7 @@ The Homey MCP Server enables Claude AI to interact directly with your Homey Pro 
 
 3. **Configure Claude Desktop**
    
+   ### 🍎 **macOS/Linux**
    Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
    ```json
    {
@@ -55,6 +58,31 @@ The Homey MCP Server enables Claude AI to interact directly with your Homey Pro 
      }
    }
    ```
+
+   ### 🪟 **Windows**
+   Add to `%APPDATA%\Claude\claude_desktop_config.json`:
+   ```json
+   {
+     "mcpServers": {
+       "homey": {
+         "command": "uv",
+         "args": ["run", "python", "src/homey_mcp/__main__.py"],
+         "cwd": "C:\\path\\to\\mcp-homey",
+         "env": {
+           "HOMEY_LOCAL_ADDRESS": "192.168.68.129",
+           "HOMEY_LOCAL_TOKEN": "your-token-here",
+           "OFFLINE_MODE": "false",
+           "DEMO_MODE": "false"
+         }
+       }
+     }
+   }
+   ```
+   
+   **Windows Notes:**
+   - Install uv first: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
+   - Use full Windows paths: `C:\\Users\\YourName\\Projects\\mcp-homey`
+   - Restart PowerShell after installing uv
 
 4. **Restart Claude Desktop and test!**
 
@@ -114,6 +142,7 @@ Switch modes by editing your Claude Desktop config and restarting Claude:
 
 ## 🔧 Development & Debugging
 
+### 🍎 **macOS/Linux**
 ```bash
 # Manual testing
 export OFFLINE_MODE="true" DEMO_MODE="true"
@@ -129,9 +158,33 @@ tail -f homey_mcp_debug.log
 make inspector  # Web UI at localhost:5173
 ```
 
+### 🪟 **Windows**
+```powershell
+# Manual testing
+$env:OFFLINE_MODE="true"; $env:DEMO_MODE="true"
+uv run python src/homey_mcp/__main__.py
+
+# Development commands
+uv sync
+uv run pytest
+uv run python test_capabilities.py
+uv run python test_insights.py
+
+# Debugging
+Get-Content homey_mcp_debug.log -Wait  # Like tail -f
+```
+
 ## 🔍 Troubleshooting
 
-**❌ Configuration issues** → Check path to `start_homey_mcp.sh` and file permissions  
+### 🪟 **Windows-specific**
+**❌ "uv not found"** → Install uv: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`  
+**❌ Path issues** → Use full Windows paths with double backslashes: `C:\\Users\\Name\\Projects\\mcp-homey`  
+**❌ PowerShell execution policy** → Run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+
+### 🍎 **macOS/Linux**  
+**❌ Configuration issues** → Check path to `start_homey_mcp.sh` and file permissions: `chmod +x start_homey_mcp.sh`  
+
+### 🌐 **All Platforms**
 **❌ Missing scopes** → Create API key with ALL scopes at [my.homey.app](https://my.homey.app)  
 **❌ Connection timeout** → Verify Homey IP and network connectivity  
 **❌ Unauthorized** → Check token validity and expiration
